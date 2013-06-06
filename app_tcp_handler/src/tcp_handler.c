@@ -153,12 +153,15 @@ static void tcp_conn_init(chanend tcp_svr, xtcp_connection_t *conn)
            conn,
            (xtcp_appstate_t) &connection_states[i]);
 
-      if (XTCP_IPADDR_CMP(conn->remote_addr, host_ipconfig)) {
+      if ((XTCP_IPADDR_CMP(conn->remote_addr, host_ipconfig)) &&
+    		  (conn->remote_port == OUT_PORT)) {
     	  printstrln("Req new conn received");
     	  xtcp_init_send(tcp_svr, conn);
           for (j=0; j<DATA_BUFFER_LEN;j++) {
         	  connection_states[i].data[j] = 'a'+j%27;
           }
+          connection_states[i].dptr = connection_states[i].data;
+          connection_states[i].dlen = DATA_BUFFER_LEN-1;
       }
     }
 }
@@ -207,7 +210,8 @@ void xtcp_handle_event(chanend tcp_svr, xtcp_connection_t *conn)
     }
 
   // Check if the connection is an client app connection
-  if (conn->local_port == IN_PORT) {
+  if ((conn->local_port == IN_PORT) ||
+		  (conn->remote_port == OUT_PORT) ) {
     switch (conn->event)
       {
       case XTCP_NEW_CONNECTION:
