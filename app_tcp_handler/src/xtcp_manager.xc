@@ -7,21 +7,24 @@
 #include <print.h>
 #include "xtcp_client.h"
 #include "tcp_handler.h"
+#include "udp_handler.h"
 
 // The main tcp manager thread
-void xtcp_manager(chanend tcp_svr)
+void xtcp_manager(chanend c_xtcp)
 {
   xtcp_connection_t conn;
-  // Initiate the TCP connection state
-  tcpd_init(tcp_svr);
+  // Initiate the TCP connection states
+  tcpd_init(c_xtcp);
+  udpd_init(c_xtcp);
 
   // Loop forever processing TCP events
   while(1)
     {
       select
         {
-        case xtcp_event(tcp_svr, conn):
-          xtcp_handle_event(tcp_svr, conn);
+        case xtcp_event(c_xtcp, conn):
+		  xtcp_handle_tcp_event(c_xtcp, conn);
+          xtcp_handle_udp_event(c_xtcp, conn);
           break;
         }
     }
