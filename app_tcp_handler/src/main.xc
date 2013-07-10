@@ -36,6 +36,7 @@ xtcp_ipconfig_t ipconfig = {
 // Program entry point
 int main(void) {
     chan c_xtcp[1];
+    chan c_xscope[1];
 
 	par
 	{
@@ -45,9 +46,12 @@ int main(void) {
                                   ipconfig,
                                   c_xtcp,
                                   1);
-
-          // The tcp manager
-          on tile[0]: xtcp_manager(c_xtcp[0]);
+          // The tcp manager core(s)
+          on tile[1]: xtcp_manager(c_xtcp[0]);
+          /*on tile[0]: xtcp_manager(c_xtcp[2]);
+          on tile[1]: xtcp_manager(c_xtcp[3]);
+          on tile[0]: xtcp_manager(c_xtcp[4]);
+          on tile[1]: xtcp_manager(c_xtcp[5]);*/
 
 	}
 	return 0;

@@ -6,6 +6,6 @@
 #ifndef XTCP_MANAGER_H_
 #define XTCP_MANAGER_H_
 
-void xtcp_manager(chanend tcp_svr);
+void xtcp_manager(chanend c_xtcp);
 
 #endif /* XTCP_MANAGER_H_ */

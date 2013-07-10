@@ -8,7 +8,6 @@
 #include "xtcp_client.h"
 #include "tcp_handler.h"
 
-
 // Port on which the device will listen to
 #define TCP_IN_PORT	500
 // Port on which the device will connect to
@@ -17,14 +16,13 @@
 #define MAX_NUM_CONNECTIONS 10
 // Buffer to hold the connection specific data
 #define DATA_BUFFER_LEN	100
-//Host to which the device to connect to
-#define HOST_IP_ADDR	{169, 254, 196, 175}
 
 // Structure to hold TCP Connection state
 typedef struct tcpd_state_t {
   int active;      //< Whether this state structure is being used
                    //  for a connection
   int conn_id;     //< The connection id
+  int port_no;     //< The port number based on connection type
   char *dptr;      //< Pointer to the remaining data to send
   char data[DATA_BUFFER_LEN];
   int dlen;        //< The length of remaining data to send
@@ -32,16 +30,16 @@ typedef struct tcpd_state_t {
 } tcpd_state_t;
 
 tcpd_state_t connection_states[MAX_NUM_CONNECTIONS];
-xtcp_ipaddr_t host_ipconfig = HOST_IP_ADDR;
 ////
 
 // Initialize the connection states
 void tcpd_init(chanend c_xtcp)
 {
   int i;
+#if 0
   // Listen on the app port
   xtcp_listen(c_xtcp, TCP_IN_PORT, XTCP_PROTOCOL_TCP);
-
+#endif
   for ( i = 0; i < MAX_NUM_CONNECTIONS; i++ )
     {
       connection_states[i].active = 0;
@@ -50,23 +48,48 @@ void tcpd_init(chanend c_xtcp)
 }
 ////
 
-void request_host_connection(chanend c_xtcp, int out_port, xtcp_ipaddr_t host_ip_addr,  xtcp_protocol_t protocol_type)
+int get_conn_id (xtcp_ipaddr_t ipaddr, int port_no)
 {
-	xtcp_connect(c_xtcp, out_port, host_ip_addr, protocol_type);
+  int i;
+  ipaddr = 0; //Not used for now
+  for (i = 0; (i<MAX_NUM_CONNECTIONS && connection_states[i].port_no == port_no); i++) {
+	return connection_states[i].conn_id;
+  }
+  return 0;
 }
 
-// Store the data receibed from a TCP request
+// Store the data received from a TCP request
 static void parse_tcp_request(tcpd_state_t *conn_state, char *data, int len)
 {
   int i;
+
+  if (conn_state->dlen + len >= DATA_BUFFER_LEN) {
+	printstrln("Holding data is larger than buffer it can store");
+	len = DATA_BUFFER_LEN - conn_state->dlen;
+  }
+
   // Buffer the received data
   for (i=0;i<len;i++) {
-	  conn_state->data[i] = *(data+i);
+	  conn_state->data[i+conn_state->dlen] = *(data+i);
   }
-  conn_state->dptr = conn_state->data;
-  conn_state->dlen = len;
+  //conn_state->dptr = conn_state->data;
+  conn_state->dlen += len;
 }
 //:
+
+static int validate_port(xtcp_connection_t *conn)
+{
+  int i;
+
+  for (i = 0;
+	   ( i<MAX_NUM_CONNECTIONS &&
+		  ((connection_states[i].port_no == conn->local_port) && (conn->connection_type == XTCP_SERVER_CONNECTION)) ||
+		  ((connection_states[i].port_no == conn->remote_port) && (conn->connection_type == XTCP_CLIENT_CONNECTION)) );
+      i++) {
+		return 1;
+	  }
+  return 0;
+}
 
 // Receive a TCP request
 static void tcp_recv(chanend c_xtcp, xtcp_connection_t *conn)
@@ -75,20 +98,16 @@ static void tcp_recv(chanend c_xtcp, xtcp_connection_t *conn)
   char data[XTCP_CLIENT_BUF_SIZE];
   int len;
 
-  // Receive the data from the TCP stack
+  // Receive data from the TCP stack
   len = xtcp_recv(c_xtcp, data);
 
   if (conn_state == NULL)
 	  return;
 
   // Otherwise we have data, so parse it
-  if (len >= DATA_BUFFER_LEN) {
-	printstrln("Incoming data is larger than buffer it can store");
-	parse_tcp_request(conn_state, &data[0], DATA_BUFFER_LEN);
-  }
-  else
-    parse_tcp_request(conn_state, &data[0], len);
+  parse_tcp_request(conn_state, &data[0], len);
 
+#if 0
   // If we are required to send data
   if (conn_state->dptr != NULL)
     {
@@ -97,9 +116,25 @@ static void tcp_recv(chanend c_xtcp, xtcp_connection_t *conn)
       // when it's ready to send
       xtcp_init_send(c_xtcp, conn);
     }
+#endif
 }
 
+#if 0
+//Close the client connection to the host server
+static void tcp_close(chanend c_xtcp, xtcp_connection_t *conn)
+{
+  struct tcpd_state_t *conn_state = (struct tcpd_state_t *) conn->appstate;
+  int len = conn_state->dlen;
 
+  if ((XTCP_IPADDR_CMP(conn->remote_addr, host_ipconfig)) &&
+	   (conn->remote_port == TCP_OUT_PORT)) {
+    if (len > 0) {
+      printstrln("Some more data is available on the connection before closing");
+    }
+    xtcp_close(c_xtcp, conn);
+  }
+}
+#endif
 // Send some data back for a TCP request
 static void tcp_send(chanend c_xtcp, xtcp_connection_t *conn)
 {
@@ -121,67 +156,61 @@ static void tcp_send(chanend c_xtcp, xtcp_connection_t *conn)
   conn_state->dlen -= len;
 }
 
-
 // Setup a new connection
 static void tcp_conn_init(chanend c_xtcp, xtcp_connection_t *conn)
 {
   int i,j;
 
   // Try and find an empty connection slot
-  for (i=0;i<MAX_NUM_CONNECTIONS;i++)
-    {
-      if (!connection_states[i].active)
-        break;
-    }
+  for (i=0;i<MAX_NUM_CONNECTIONS;i++) {
+	if (!connection_states[i].active)
+	  break;
+  }
 
   // If no free connection slots were found, abort the connection
-  if ( i == MAX_NUM_CONNECTIONS )
-    {
-      xtcp_abort(c_xtcp, conn);
-    }
+  if ( i == MAX_NUM_CONNECTIONS ) {
+	xtcp_abort(c_xtcp, conn);
+  }
   // Otherwise, assign the connection to a slot        //
   else
     {
       connection_states[i].active = 1;
       connection_states[i].conn_id = conn->id;
       connection_states[i].dptr = NULL;
-      for (j=0; j<DATA_BUFFER_LEN;j++) {
-    	  connection_states[i].data[j] = '\0';
+
+      if (conn->connection_type == XTCP_SERVER_CONNECTION) {
+    	connection_states[i].port_no = conn->local_port;
+    	/* Clear up any previous or junk data */
+        for (j=0; j<DATA_BUFFER_LEN;j++) {
+      	  connection_states[i].data[j] = '\0';
+        }
       }
+      else { //if (conn->connection_type == XTCP_CLIENT_CONNECTION)
+		connection_states[i].port_no = conn->remote_port;
+        printstrln("Requested new conn received");
+        //Fill the buffer with sample data to send
+        for (j=0; j<DATA_BUFFER_LEN;j++) {
+          connection_states[i].data[j] = 'a'+j%27;
+        }
+        connection_states[i].dptr = connection_states[i].data;
+        connection_states[i].dlen = DATA_BUFFER_LEN-1;
+      }
+
       xtcp_set_connection_appstate(
            c_xtcp,
            conn,
            (xtcp_appstate_t) &connection_states[i]);
-
-      if ((XTCP_IPADDR_CMP(conn->remote_addr, host_ipconfig)) &&
-    		  (conn->remote_port == TCP_OUT_PORT)) {
-    	  printstrln("Req new conn received");
-    	  xtcp_init_send(c_xtcp, conn);
-          for (j=0; j<DATA_BUFFER_LEN;j++) {
-        	  connection_states[i].data[j] = 'a'+j%27;
-          }
-          connection_states[i].dptr = connection_states[i].data;
-          connection_states[i].dlen = DATA_BUFFER_LEN-1;
-      }
     }
 }
-
 
 // Free a connection slot, for a finished connection
 static void tcp_conn_free(xtcp_connection_t *conn)
 {
   int i;
-
-  for ( i = 0; i < MAX_NUM_CONNECTIONS; i++ )
-    {
-      if (connection_states[i].conn_id == conn->id)
-        {
-          connection_states[i].active = 0;
-        }
-    }
+  for ( i = 0; ( (i < MAX_NUM_CONNECTIONS) && (connection_states[i].conn_id == conn->id)); i++ ) {
+    connection_states[i].active = 0;
+  }
 }
-////
-
 
 // TCP event handler
 void xtcp_handle_tcp_event(chanend c_xtcp, xtcp_connection_t *conn)
@@ -211,8 +240,7 @@ void xtcp_handle_tcp_event(chanend c_xtcp, xtcp_connection_t *conn)
     }
 
   // Check if the connection is an client app connection
-  if ((conn->local_port == TCP_IN_PORT) ||
-		  (conn->remote_port == TCP_OUT_PORT) ) {
+  if (validate_port(conn)) {
     switch (conn->event)
       {
       case XTCP_NEW_CONNECTION:
@@ -225,12 +253,12 @@ void xtcp_handle_tcp_event(chanend c_xtcp, xtcp_connection_t *conn)
       case XTCP_REQUEST_DATA:
       case XTCP_RESEND_DATA:
         tcp_send(c_xtcp, conn);
+        //tcp_close(c_xtcp, conn);
         break;
       case XTCP_TIMED_OUT:
       case XTCP_ABORTED:
       case XTCP_CLOSED:
         tcp_conn_free(conn);
-        request_host_connection(c_xtcp, TCP_OUT_PORT, host_ipconfig, XTCP_PROTOCOL_TCP);
         break;
       default:
         // Ignore anything else
@@ -241,4 +269,3 @@ void xtcp_handle_tcp_event(chanend c_xtcp, xtcp_connection_t *conn)
   ////
   return;
 }
-////
