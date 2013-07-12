@@ -8,10 +8,6 @@
 #include "xtcp_client.h"
 #include "tcp_handler.h"
 
-// Port on which the device will listen to
-#define TCP_IN_PORT	500
-// Port on which the device will connect to
-#define TCP_OUT_PORT	501
 // Maximum number of concurrent connections
 #define MAX_NUM_CONNECTIONS 10
 // Buffer to hold the connection specific data
@@ -30,23 +26,16 @@ typedef struct tcpd_state_t {
 } tcpd_state_t;
 
 tcpd_state_t connection_states[MAX_NUM_CONNECTIONS];
-////
 
 // Initialize the connection states
 void tcpd_init(chanend c_xtcp)
 {
   int i;
-#if 0
-  // Listen on the app port
-  xtcp_listen(c_xtcp, TCP_IN_PORT, XTCP_PROTOCOL_TCP);
-#endif
-  for ( i = 0; i < MAX_NUM_CONNECTIONS; i++ )
-    {
-      connection_states[i].active = 0;
-      connection_states[i].dptr = NULL;
-    }
+  for ( i = 0; i < MAX_NUM_CONNECTIONS; i++ )  {
+    connection_states[i].active = 0;
+    connection_states[i].dptr = NULL;
+  }
 }
-////
 
 int get_conn_id (xtcp_ipaddr_t ipaddr, int port_no)
 {
@@ -55,6 +44,20 @@ int get_conn_id (xtcp_ipaddr_t ipaddr, int port_no)
   for (i = 0; (i<MAX_NUM_CONNECTIONS && connection_states[i].port_no == port_no); i++) {
 	return connection_states[i].conn_id;
   }
+  return 0;
+}
+
+static int validate_port(xtcp_connection_t *conn)
+{
+  int i;
+
+  for (i = 0;
+	   ( i<MAX_NUM_CONNECTIONS &&
+		  ((connection_states[i].port_no == conn->local_port) && (conn->connection_type == XTCP_SERVER_CONNECTION)) ||
+		  ((connection_states[i].port_no == conn->remote_port) && (conn->connection_type == XTCP_CLIENT_CONNECTION)) );
+      i++) {
+		return 1;
+	  }
   return 0;
 }
 
@@ -75,21 +78,6 @@ static void parse_tcp_request(tcpd_state_t *conn_state, char *data, int len)
   //conn_state->dptr = conn_state->data;
   conn_state->dlen += len;
 }
-//:
-
-static int validate_port(xtcp_connection_t *conn)
-{
-  int i;
-
-  for (i = 0;
-	   ( i<MAX_NUM_CONNECTIONS &&
-		  ((connection_states[i].port_no == conn->local_port) && (conn->connection_type == XTCP_SERVER_CONNECTION)) ||
-		  ((connection_states[i].port_no == conn->remote_port) && (conn->connection_type == XTCP_CLIENT_CONNECTION)) );
-      i++) {
-		return 1;
-	  }
-  return 0;
-}
 
 // Receive a TCP request
 static void tcp_recv(chanend c_xtcp, xtcp_connection_t *conn)
@@ -106,35 +94,8 @@ static void tcp_recv(chanend c_xtcp, xtcp_connection_t *conn)
 
   // Otherwise we have data, so parse it
   parse_tcp_request(conn_state, &data[0], len);
-
-#if 0
-  // If we are required to send data
-  if (conn_state->dptr != NULL)
-    {
-      // Initate a send request with the TCP stack.
-      // It will then reply with event XTCP_REQUEST_DATA
-      // when it's ready to send
-      xtcp_init_send(c_xtcp, conn);
-    }
-#endif
 }
 
-#if 0
-//Close the client connection to the host server
-static void tcp_close(chanend c_xtcp, xtcp_connection_t *conn)
-{
-  struct tcpd_state_t *conn_state = (struct tcpd_state_t *) conn->appstate;
-  int len = conn_state->dlen;
-
-  if ((XTCP_IPADDR_CMP(conn->remote_addr, host_ipconfig)) &&
-	   (conn->remote_port == TCP_OUT_PORT)) {
-    if (len > 0) {
-      printstrln("Some more data is available on the connection before closing");
-    }
-    xtcp_close(c_xtcp, conn);
-  }
-}
-#endif
 // Send some data back for a TCP request
 static void tcp_send(chanend c_xtcp, xtcp_connection_t *conn)
 {
@@ -223,16 +184,18 @@ void xtcp_handle_tcp_event(chanend c_xtcp, xtcp_connection_t *conn)
   switch (conn->event)
     {
     case XTCP_IFUP: {
-        xtcp_ipconfig_t ipconfig;
-        xtcp_get_ipconfig(c_xtcp, &ipconfig);
-        printstr("IP Address: ");
-        printint(ipconfig.ipaddr[0]);printstr(".");
-        printint(ipconfig.ipaddr[1]);printstr(".");
-        printint(ipconfig.ipaddr[2]);printstr(".");
-        printint(ipconfig.ipaddr[3]);printstr("\n");
-      }
-      return;
+      xtcp_ipconfig_t ipconfig;
+      xtcp_get_ipconfig(c_xtcp, &ipconfig);
+      printstr("IP Address: ");
+      printint(ipconfig.ipaddr[0]);printstr(".");
+      printint(ipconfig.ipaddr[1]);printstr(".");
+      printint(ipconfig.ipaddr[2]);printstr(".");
+      printint(ipconfig.ipaddr[3]);printstr("\n");
+    }
+    return;
     case XTCP_IFDOWN:
+      tcp_conn_free(conn);
+      return;
     case XTCP_ALREADY_HANDLED:
       return;
     default:
@@ -240,7 +203,8 @@ void xtcp_handle_tcp_event(chanend c_xtcp, xtcp_connection_t *conn)
     }
 
   // Check if the connection is an client app connection
-  if (validate_port(conn)) {
+  if ( (XTCP_PROTOCOL_TCP == conn->protocol) &&
+     ( (validate_port(conn)) || (XTCP_NEW_CONNECTION == conn->event)) ) {
     switch (conn->event)
       {
       case XTCP_NEW_CONNECTION:
@@ -253,7 +217,6 @@ void xtcp_handle_tcp_event(chanend c_xtcp, xtcp_connection_t *conn)
       case XTCP_REQUEST_DATA:
       case XTCP_RESEND_DATA:
         tcp_send(c_xtcp, conn);
-        //tcp_close(c_xtcp, conn);
         break;
       case XTCP_TIMED_OUT:
       case XTCP_ABORTED:
@@ -266,6 +229,5 @@ void xtcp_handle_tcp_event(chanend c_xtcp, xtcp_connection_t *conn)
       }
     conn->event = XTCP_ALREADY_HANDLED;
   }
-  ////
   return;
 }

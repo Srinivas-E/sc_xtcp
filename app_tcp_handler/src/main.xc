@@ -47,7 +47,7 @@ int main(void) {
                                   c_xtcp,
                                   1);
           // The tcp manager core(s)
-          on tile[1]: xtcp_manager(c_xtcp[0]);
+          on tile[0]: xtcp_manager(c_xtcp[0]);
           /*on tile[0]: xtcp_manager(c_xtcp[2]);
           on tile[1]: xtcp_manager(c_xtcp[3]);
           on tile[0]: xtcp_manager(c_xtcp[4]);
