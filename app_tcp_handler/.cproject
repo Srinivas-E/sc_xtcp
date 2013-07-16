@@ -176,6 +176,15 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_ethernet}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_ethernet_smi}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_ethernet_board_support/SLICEKIT-L16}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_random}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_xassert/doc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_logging/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_xassert}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_logging/doc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_xassert/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_random/doc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_logging}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_random/src}&quot;"/>
 								</option>
 								<inputType id="com.xmos.cdt.xc.compiler.input.797999503" name="XC" superClass="com.xmos.cdt.xc.compiler.input"/>
 							</tool>
@@ -307,6 +316,15 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_ethernet}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_ethernet_smi}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_ethernet_board_support/SLICEKIT-L16}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_random}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_xassert/doc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_logging/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_xassert}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_logging/doc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_xassert/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_random/doc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_logging}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_random/src}&quot;"/>
 								</option>
 								<inputType id="com.xmos.cdt.c.compiler.input.c.1448647744" name="C" superClass="com.xmos.cdt.c.compiler.input.c"/>
 							</tool>
@@ -444,6 +462,15 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_ethernet}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_ethernet_smi}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_ethernet_board_support/SLICEKIT-L16}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_random}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_xassert/doc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_logging/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_xassert}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_logging/doc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_xassert/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_random/doc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_logging}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_random/src}&quot;"/>
 								</option>
 								<inputType id="com.xmos.cdt.cxx.compiler.input.cpp.1793812894" name="C++" superClass="com.xmos.cdt.cxx.compiler.input.cpp"/>
 							</tool>
@@ -474,6 +501,8 @@
 					</target>
 				</buildTargets>
 			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.language.mapping"/>
+			<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 		</cconfiguration>
 		<cconfiguration id="com.xmos.cdt.toolchain.1687200114">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="com.xmos.cdt.toolchain.1687200114" moduleId="org.eclipse.cdt.core.settings" name="Release">
@@ -649,6 +678,15 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_ethernet}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_ethernet_smi}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_ethernet_board_support/SLICEKIT-L16}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_random}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_xassert/doc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_logging/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_xassert}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_logging/doc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_xassert/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_random/doc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_logging}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_random/src}&quot;"/>
 								</option>
 								<inputType id="com.xmos.cdt.xc.compiler.input.1975589203" name="XC" superClass="com.xmos.cdt.xc.compiler.input"/>
 							</tool>
@@ -780,6 +818,15 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_ethernet}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_ethernet_smi}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_ethernet_board_support/SLICEKIT-L16}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_random}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_xassert/doc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_logging/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_xassert}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_logging/doc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_xassert/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_random/doc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_logging}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_random/src}&quot;"/>
 								</option>
 								<inputType id="com.xmos.cdt.c.compiler.input.c.1613381794" name="C" superClass="com.xmos.cdt.c.compiler.input.c"/>
 							</tool>
@@ -917,6 +964,15 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_ethernet}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_ethernet_smi}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_ethernet_board_support/SLICEKIT-L16}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_random}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_xassert/doc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_logging/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_xassert}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_logging/doc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_xassert/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_random/doc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_logging}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_random/src}&quot;"/>
 								</option>
 								<inputType id="com.xmos.cdt.cxx.compiler.input.cpp.356463884" name="C++" superClass="com.xmos.cdt.cxx.compiler.input.cpp"/>
 							</tool>
@@ -948,6 +1004,8 @@
 					</target>
 				</buildTargets>
 			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.language.mapping"/>
+			<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 		</cconfiguration>
 	</storageModule>
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">

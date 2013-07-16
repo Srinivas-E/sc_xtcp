@@ -7,6 +7,8 @@
 #include "xtcp.h"
 #include "ethernet_board_support.h"
 #include "xtcp_manager.h"
+#include "producer_consumer.h"
+#include "random.h"
 
 // These intializers are taken from the ethernet_board_support.h header for
 // XMOS dev boards. If you are using a different board you will need to
@@ -36,7 +38,10 @@ xtcp_ipconfig_t ipconfig = {
 // Program entry point
 int main(void) {
     chan c_xtcp[1];
-    chan c_xscope[1];
+
+    chan c0, c1, c2, c3;
+    chan c4, c5, c6, c7;
+    chan c8, c9, c10, c11;
 
 	par
 	{
@@ -48,11 +53,18 @@ int main(void) {
                                   1);
           // The tcp manager core(s)
           on tile[0]: xtcp_manager(c_xtcp[0]);
-          /*on tile[0]: xtcp_manager(c_xtcp[2]);
+        /*on tile[0]: xtcp_manager(c_xtcp[1]);
+          on tile[1]: xtcp_manager(c_xtcp[2]);
           on tile[1]: xtcp_manager(c_xtcp[3]);
           on tile[0]: xtcp_manager(c_xtcp[4]);
           on tile[1]: xtcp_manager(c_xtcp[5]);*/
 
+          on tile[0] : test_producer_consumer(c0, c1, c2, c3);
+          on tile[1] : test_producer_consumer(c0, c1, c2, c3);
+          on tile[0] : test_producer_consumer(c4, c5, c6, c7);
+          on tile[1] : test_producer_consumer(c4, c5, c6, c7);
+          on tile[0] : test_producer_consumer(c8, c9, c10, c11);
+          on tile[1] : test_producer_consumer(c8, c9, c10, c11);
 	}
 	return 0;
 }

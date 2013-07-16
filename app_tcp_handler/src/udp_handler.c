@@ -17,7 +17,7 @@ typedef struct udp_app_state
                      //  for a connection
   int conn_id;       //< The connection id
   int port_no;       //< The port number based on connection type
-  int dlen;        //< The length of the data to send
+  int dlen;          //< The length of the data to send
   char data[BUFFER_SIZE];
 
 }udp_app_state;
@@ -73,12 +73,10 @@ static int validate_port(xtcp_connection_t *conn)
 {
   int i;
 
-  for (i = 0;
-	   ( i<UDP_MAX_CONNECTIONS &&
-		  ((udp_connection_state[i].port_no == conn->local_port) && (conn->connection_type == XTCP_SERVER_CONNECTION)) ||
-		  ((udp_connection_state[i].port_no == conn->remote_port) && (conn->connection_type == XTCP_CLIENT_CONNECTION)) );
-      i++) {
-		return 1;
+  for (i = 0; i<UDP_MAX_CONNECTIONS; i++) {
+	    if ( ((udp_connection_state[i].port_no == conn->local_port) && (conn->connection_type == XTCP_SERVER_CONNECTION)) ||
+		     ((udp_connection_state[i].port_no == conn->remote_port) && (conn->connection_type == XTCP_CLIENT_CONNECTION)) )
+	     return 1;
 	  }
   return 0;
 }
@@ -86,8 +84,9 @@ static int validate_port(xtcp_connection_t *conn)
 static void udp_recv(chanend c_xtcp, xtcp_connection_t *conn)
 {
   int i;
-  for (i = 0; (i<UDP_MAX_CONNECTIONS && udp_connection_state[i].conn_id == conn->id); i++) {
-	break;
+  for (i = 0; i<UDP_MAX_CONNECTIONS; i++) {
+	if (udp_connection_state[i].conn_id == conn->id)
+	  break;
   }
 
   // If no free connection slots were found, abort the connection
@@ -97,9 +96,9 @@ static void udp_recv(chanend c_xtcp, xtcp_connection_t *conn)
   }
   else {
 	udp_connection_state[i].dlen = xtcp_recv_count(c_xtcp, udp_connection_state[i].data, BUFFER_SIZE);
-	printstr("Got data: ");
+	/*printstr("Got data: ");
 	printint(udp_connection_state[i].dlen);
-	printstrln(" bytes. Resending");
+	printstrln(" bytes. Resending");*/
 	xtcp_init_send(c_xtcp, conn);
   }
 }
@@ -107,8 +106,9 @@ static void udp_recv(chanend c_xtcp, xtcp_connection_t *conn)
 static void udp_send(chanend c_xtcp, xtcp_connection_t *conn)
 {
   int i;
-  for (i = 0; (i<UDP_MAX_CONNECTIONS && udp_connection_state[i].conn_id == conn->id); i++) {
-	break;
+  for (i = 0; i<UDP_MAX_CONNECTIONS; i++) {
+	if (udp_connection_state[i].conn_id == conn->id)
+	  break;
   }
 
   // If no free connection slots were found, abort the connection
@@ -124,8 +124,9 @@ static void udp_send(chanend c_xtcp, xtcp_connection_t *conn)
 static void udp_conn_close(chanend c_xtcp, xtcp_connection_t *conn)
 {
   int i;
-  for (i = 0; (i<UDP_MAX_CONNECTIONS && udp_connection_state[i].conn_id == conn->id); i++) {
-	break;
+  for (i = 0; i<UDP_MAX_CONNECTIONS; i++) {
+	if (udp_connection_state[i].conn_id == conn->id)
+	  break;
   }
 
   // If no free connection slots were found, abort the connection
@@ -139,8 +140,9 @@ static void udp_conn_close(chanend c_xtcp, xtcp_connection_t *conn)
 static void udp_conn_free(xtcp_connection_t *conn)
 {
   int i;
-  for ( i = 0; ( (i < UDP_MAX_CONNECTIONS) && (udp_connection_state[i].conn_id == conn->id)); i++ ) {
-    udp_connection_state[i].active = 0;
+  for ( i = 0; i<UDP_MAX_CONNECTIONS; i++ ) {
+	if (udp_connection_state[i].conn_id == conn->id)
+	  udp_connection_state[i].active = 0;
   }
 }
 
@@ -162,7 +164,7 @@ void xtcp_handle_udp_event(chanend c_xtcp, xtcp_connection_t *conn)
 
   // Check if the connection is an client app connection
   if ( (XTCP_PROTOCOL_UDP == conn->protocol) &&
-     ( (validate_port(conn)) || (XTCP_NEW_CONNECTION == conn->event)) ) {
+     ( (XTCP_NEW_CONNECTION == conn->event) || (validate_port(conn))) ) {
     switch (conn->event)
       {
       case XTCP_NEW_CONNECTION:

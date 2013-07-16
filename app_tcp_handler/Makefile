@@ -9,7 +9,7 @@ TARGET = SLICEKIT-L16
 APP_NAME = app_tcp_handler
 
 # The USED_MODULES variable lists other module used by the application.
-USED_MODULES = module_ethernet_board_support module_xtcp
+USED_MODULES = module_ethernet_board_support module_logging module_random module_xassert module_xtcp
 
 # The flags passed to xcc when building the application
 # You can also set the following to override flags for a particular language:

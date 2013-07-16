@@ -41,8 +41,9 @@ int get_conn_id (xtcp_ipaddr_t ipaddr, int port_no)
 {
   int i;
   ipaddr = 0; //Not used for now
-  for (i = 0; (i<MAX_NUM_CONNECTIONS && connection_states[i].port_no == port_no); i++) {
-	return connection_states[i].conn_id;
+  for (i = 0; i<MAX_NUM_CONNECTIONS; i++) {
+	if (connection_states[i].port_no == port_no)
+	  return connection_states[i].conn_id;
   }
   return 0;
 }
@@ -51,11 +52,9 @@ static int validate_port(xtcp_connection_t *conn)
 {
   int i;
 
-  for (i = 0;
-	   ( i<MAX_NUM_CONNECTIONS &&
-		  ((connection_states[i].port_no == conn->local_port) && (conn->connection_type == XTCP_SERVER_CONNECTION)) ||
-		  ((connection_states[i].port_no == conn->remote_port) && (conn->connection_type == XTCP_CLIENT_CONNECTION)) );
-      i++) {
+  for (i = 0;i<MAX_NUM_CONNECTIONS;i++) {
+	  if ( ((connection_states[i].port_no == conn->local_port) && (conn->connection_type == XTCP_SERVER_CONNECTION)) ||
+	       ((connection_states[i].port_no == conn->remote_port) && (conn->connection_type == XTCP_CLIENT_CONNECTION)) )
 		return 1;
 	  }
   return 0;
@@ -67,15 +66,18 @@ static void parse_tcp_request(tcpd_state_t *conn_state, char *data, int len)
   int i;
 
   if (conn_state->dlen + len >= DATA_BUFFER_LEN) {
-	printstrln("Holding data is larger than buffer it can store");
+	//printstrln("Holding data is larger than buffer it can store");
 	len = DATA_BUFFER_LEN - conn_state->dlen;
   }
 
   // Buffer the received data
   for (i=0;i<len;i++) {
-	  conn_state->data[i+conn_state->dlen] = *(data+i);
+    conn_state->data[i+conn_state->dlen] = *(data+i);
   }
-  //conn_state->dptr = conn_state->data;
+
+  if (conn_state->dlen == 0)
+    conn_state->dptr = conn_state->data;
+
   conn_state->dlen += len;
 }
 
@@ -115,6 +117,12 @@ static void tcp_send(chanend c_xtcp, xtcp_connection_t *conn)
   conn_state->prev_dptr = conn_state->dptr;
   conn_state->dptr += len;
   conn_state->dlen -= len;
+
+  if ((conn->event == XTCP_SENT_DATA) && (conn_state->dlen > 0)) {
+	xtcp_init_send(c_xtcp, conn);
+    return;
+  }
+
 }
 
 // Setup a new connection
@@ -137,7 +145,7 @@ static void tcp_conn_init(chanend c_xtcp, xtcp_connection_t *conn)
     {
       connection_states[i].active = 1;
       connection_states[i].conn_id = conn->id;
-      connection_states[i].dptr = NULL;
+      connection_states[i].dptr = connection_states[i].data;
 
       if (conn->connection_type == XTCP_SERVER_CONNECTION) {
     	connection_states[i].port_no = conn->local_port;
@@ -153,7 +161,6 @@ static void tcp_conn_init(chanend c_xtcp, xtcp_connection_t *conn)
         for (j=0; j<DATA_BUFFER_LEN;j++) {
           connection_states[i].data[j] = 'a'+j%27;
         }
-        connection_states[i].dptr = connection_states[i].data;
         connection_states[i].dlen = DATA_BUFFER_LEN-1;
       }
 
@@ -168,8 +175,9 @@ static void tcp_conn_init(chanend c_xtcp, xtcp_connection_t *conn)
 static void tcp_conn_free(xtcp_connection_t *conn)
 {
   int i;
-  for ( i = 0; ( (i < MAX_NUM_CONNECTIONS) && (connection_states[i].conn_id == conn->id)); i++ ) {
-    connection_states[i].active = 0;
+  for ( i = 0; i < MAX_NUM_CONNECTIONS; i++ ) {
+	if (connection_states[i].conn_id == conn->id)
+	  connection_states[i].active = 0;
   }
 }
 
@@ -204,7 +212,7 @@ void xtcp_handle_tcp_event(chanend c_xtcp, xtcp_connection_t *conn)
 
   // Check if the connection is an client app connection
   if ( (XTCP_PROTOCOL_TCP == conn->protocol) &&
-     ( (validate_port(conn)) || (XTCP_NEW_CONNECTION == conn->event)) ) {
+     ( (XTCP_NEW_CONNECTION == conn->event) || (validate_port(conn))) ) {
     switch (conn->event)
       {
       case XTCP_NEW_CONNECTION:
