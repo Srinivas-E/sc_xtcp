@@ -8,6 +8,7 @@
 #include "xtcp_client.h"
 #include "tcp_xscope_handler.h"
 #include "tcp_handler.h"
+#include "udp_handler.h"
 
 #define TCP_XSCOPE_PORT	1200
 
@@ -57,7 +58,11 @@ static void process_xscope_data(chanend c_xtcp, xscope_protocol xscope_data)
       case 2: { //Send data
     	int conn_id;
     	xtcp_connection_t conn;
-        conn_id = get_conn_id(ipaddr,  xscope_data.port_no);
+    	if (0 == xscope_data.protocol)
+          conn_id = get_tcp_conn_id(ipaddr,  xscope_data.port_no);
+    	else if (1 == xscope_data.protocol)
+          conn_id = get_udp_conn_id(ipaddr,  xscope_data.port_no);
+
         if (conn_id) {
        	  conn.id = conn_id;
           xtcp_init_send(c_xtcp, &conn);
@@ -67,8 +72,12 @@ static void process_xscope_data(chanend c_xtcp, xscope_protocol xscope_data)
       case 3: { //Close command
     	int conn_id;
     	xtcp_connection_t conn;
-        conn_id = get_conn_id(ipaddr, xscope_data.port_no);
-        if (conn_id) {
+    	if (0 == xscope_data.protocol)
+          conn_id = get_tcp_conn_id(ipaddr,  xscope_data.port_no);
+    	else if (1 == xscope_data.protocol)
+          conn_id = get_udp_conn_id(ipaddr,  xscope_data.port_no);
+
+    	if (conn_id) {
        	  conn.id = conn_id;
        	  xtcp_close(c_xtcp, &conn);
         }

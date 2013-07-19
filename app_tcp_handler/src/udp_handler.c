@@ -30,6 +30,18 @@ void udpd_init(chanend c_xtcp)
   return; //do nothing
 }
 
+int get_udp_conn_id (xtcp_ipaddr_t ipaddr, int port_no)
+{
+  int i;
+  ipaddr = 0; //Not used for now
+  for (i = 0; i<UDP_MAX_CONNECTIONS; i++) {
+	if ((udp_connection_state[i].port_no == port_no) &&
+		(udp_connection_state[i].active))
+	  return udp_connection_state[i].conn_id;
+  }
+  return 0;
+}
+
 // Setup a new connection
 static void udp_conn_init(chanend c_xtcp, xtcp_connection_t *conn)
 {
@@ -60,7 +72,6 @@ static void udp_conn_init(chanend c_xtcp, xtcp_connection_t *conn)
 	}
 	else { //if (conn->connection_type == XTCP_CLIENT_CONNECTION)
 	  udp_connection_state[i].port_no = conn->remote_port;
-	  printstrln("Requested new UDP conn received");
 	  //Fill the buffer with sample data to send
 	  for (j=0; j<BUFFER_SIZE;j++) {
 		udp_connection_state[i].data[j] = 'a'+j%27;
@@ -96,9 +107,6 @@ static void udp_recv(chanend c_xtcp, xtcp_connection_t *conn)
   }
   else {
 	udp_connection_state[i].dlen = xtcp_recv_count(c_xtcp, udp_connection_state[i].data, BUFFER_SIZE);
-	/*printstr("Got data: ");
-	printint(udp_connection_state[i].dlen);
-	printstrln(" bytes. Resending");*/
 	xtcp_init_send(c_xtcp, conn);
   }
 }

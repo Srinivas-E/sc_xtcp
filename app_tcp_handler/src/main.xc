@@ -52,6 +52,7 @@ int main(void) {
                                   c_xtcp,
                                   1);
           // The tcp manager core(s)
+          //on ETHERNET_DEFAULT_TILE: xtcp_manager(c_xtcp[0]);
           on tile[0]: xtcp_manager(c_xtcp[0]);
         /*on tile[0]: xtcp_manager(c_xtcp[1]);
           on tile[1]: xtcp_manager(c_xtcp[2]);

@@ -37,12 +37,13 @@ void tcpd_init(chanend c_xtcp)
   }
 }
 
-int get_conn_id (xtcp_ipaddr_t ipaddr, int port_no)
+int get_tcp_conn_id (xtcp_ipaddr_t ipaddr, int port_no)
 {
   int i;
   ipaddr = 0; //Not used for now
   for (i = 0; i<MAX_NUM_CONNECTIONS; i++) {
-	if (connection_states[i].port_no == port_no)
+	if ((connection_states[i].port_no == port_no) &&
+		(connection_states[i].active))
 	  return connection_states[i].conn_id;
   }
   return 0;
@@ -156,7 +157,6 @@ static void tcp_conn_init(chanend c_xtcp, xtcp_connection_t *conn)
       }
       else { //if (conn->connection_type == XTCP_CLIENT_CONNECTION)
 		connection_states[i].port_no = conn->remote_port;
-        printstrln("Requested new conn received");
         //Fill the buffer with sample data to send
         for (j=0; j<DATA_BUFFER_LEN;j++) {
           connection_states[i].data[j] = 'a'+j%27;
@@ -188,7 +188,6 @@ void xtcp_handle_tcp_event(chanend c_xtcp, xtcp_connection_t *conn)
   // appropriately
 
   // Ignore events that are not directly relevant to tcp handler
-  //printintln(conn->event);
   switch (conn->event)
     {
     case XTCP_IFUP: {

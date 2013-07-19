@@ -9,6 +9,7 @@
 #include "xtcp_client.h"
 
 void udpd_init(chanend tcp_svr);
+int get_udp_conn_id (xtcp_ipaddr_t ipaddr, int port_no);
 void xtcp_handle_udp_event(chanend tcp_svr, REFERENCE_PARAM(xtcp_connection_t, conn));
 
 #endif /* UDP_HANDLER_H_ */
