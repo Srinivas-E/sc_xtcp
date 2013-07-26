@@ -35,9 +35,9 @@ int get_udp_conn_id (xtcp_ipaddr_t ipaddr, int port_no)
   int i;
   ipaddr = 0; //Not used for now
   for (i = 0; i<UDP_MAX_CONNECTIONS; i++) {
-	if ((udp_connection_state[i].port_no == port_no) &&
-		(udp_connection_state[i].active))
-	  return udp_connection_state[i].conn_id;
+    if ((udp_connection_state[i].port_no == port_no) &&
+        (udp_connection_state[i].active))
+      return udp_connection_state[i].conn_id;
   }
   return 0;
 }
@@ -49,34 +49,31 @@ static void udp_conn_init(chanend c_xtcp, xtcp_connection_t *conn)
 
   // Try and find an empty connection slot
   for (i=0;i<UDP_MAX_CONNECTIONS;i++) {
-	if (!udp_connection_state[i].active)
-	  break;
+    if (!udp_connection_state[i].active)
+      break;
   }
 
   // If no free connection slots were found, abort the connection
   if ( i == UDP_MAX_CONNECTIONS ) {
-	xtcp_close(c_xtcp, conn);
+    xtcp_close(c_xtcp, conn);
   }
   // Otherwise, assign the connection to a slot        //
   else {
-	udp_connection_state[i].active = 1;
-	udp_connection_state[i].conn_id = conn->id;
-	udp_connection_state[i].dlen = 0;
+    udp_connection_state[i].active = 1;
+    udp_connection_state[i].conn_id = conn->id;
+    udp_connection_state[i].dlen = 0;
 
-	if (conn->connection_type == XTCP_SERVER_CONNECTION) {
-	  udp_connection_state[i].port_no = conn->local_port;
-	  /* Clear up any previous or junk data */
-	  for (j=0; j<BUFFER_SIZE;j++) {
-		udp_connection_state[i].data[j] = '\0';
-	  }
+    if (conn->connection_type == XTCP_SERVER_CONNECTION) {
+      udp_connection_state[i].port_no = conn->local_port;
+      memset(udp_connection_state[i].data, '\0', sizeof(udp_connection_state[i].data));
 	}
 	else { //if (conn->connection_type == XTCP_CLIENT_CONNECTION)
-	  udp_connection_state[i].port_no = conn->remote_port;
-	  //Fill the buffer with sample data to send
-	  for (j=0; j<BUFFER_SIZE;j++) {
-		udp_connection_state[i].data[j] = 'a'+j%27;
-	  }
-	}
+      udp_connection_state[i].port_no = conn->remote_port;
+      //Fill the buffer with sample data to send
+      for (j=0; j<BUFFER_SIZE;j++) {
+        udp_connection_state[i].data[j] = 'a'+j%27;
+      }
+    }
   }
 }
 
@@ -85,10 +82,10 @@ static int validate_port(xtcp_connection_t *conn)
   int i;
 
   for (i = 0; i<UDP_MAX_CONNECTIONS; i++) {
-	    if ( ((udp_connection_state[i].port_no == conn->local_port) && (conn->connection_type == XTCP_SERVER_CONNECTION)) ||
-		     ((udp_connection_state[i].port_no == conn->remote_port) && (conn->connection_type == XTCP_CLIENT_CONNECTION)) )
-	     return 1;
-	  }
+    if ( ((udp_connection_state[i].port_no == conn->local_port) && (conn->connection_type == XTCP_SERVER_CONNECTION)) ||
+         ((udp_connection_state[i].port_no == conn->remote_port) && (conn->connection_type == XTCP_CLIENT_CONNECTION)) )
+     return 1;
+  }
   return 0;
 }
 
@@ -96,18 +93,18 @@ static void udp_recv(chanend c_xtcp, xtcp_connection_t *conn)
 {
   int i;
   for (i = 0; i<UDP_MAX_CONNECTIONS; i++) {
-	if (udp_connection_state[i].conn_id == conn->id)
-	  break;
+    if (udp_connection_state[i].conn_id == conn->id)
+      break;
   }
 
   // If no free connection slots were found, abort the connection
   if ( i == UDP_MAX_CONNECTIONS ) {
-	printstrln("Could not search a valid connection; error somewhere!!!");
-	xtcp_close(c_xtcp, conn);
+    printstrln("Could not search a valid connection; error somewhere!!!");
+    xtcp_close(c_xtcp, conn);
   }
   else {
-	udp_connection_state[i].dlen = xtcp_recv_count(c_xtcp, udp_connection_state[i].data, BUFFER_SIZE);
-	xtcp_init_send(c_xtcp, conn);
+    udp_connection_state[i].dlen = xtcp_recv_count(c_xtcp, udp_connection_state[i].data, BUFFER_SIZE);
+    xtcp_init_send(c_xtcp, conn);
   }
 }
 
@@ -115,17 +112,17 @@ static void udp_send(chanend c_xtcp, xtcp_connection_t *conn)
 {
   int i;
   for (i = 0; i<UDP_MAX_CONNECTIONS; i++) {
-	if (udp_connection_state[i].conn_id == conn->id)
-	  break;
+    if (udp_connection_state[i].conn_id == conn->id)
+      break;
   }
 
   // If no free connection slots were found, abort the connection
   if ( i == UDP_MAX_CONNECTIONS ) {
-	printstrln("Could not search a valid connection; error somewhere!!!");
-	xtcp_close(c_xtcp, conn);
+    printstrln("Could not search a valid connection; error somewhere!!!");
+    xtcp_close(c_xtcp, conn);
   }
   else {
-	xtcp_send(c_xtcp, udp_connection_state[i].data, udp_connection_state[i].dlen);
+    xtcp_send(c_xtcp, udp_connection_state[i].data, udp_connection_state[i].dlen);
   }
 }
 
@@ -133,8 +130,8 @@ static void udp_conn_close(chanend c_xtcp, xtcp_connection_t *conn)
 {
   int i;
   for (i = 0; i<UDP_MAX_CONNECTIONS; i++) {
-	if (udp_connection_state[i].conn_id == conn->id)
-	  break;
+    if (udp_connection_state[i].conn_id == conn->id)
+      break;
   }
 
   // If no free connection slots were found, abort the connection
@@ -149,15 +146,14 @@ static void udp_conn_free(xtcp_connection_t *conn)
 {
   int i;
   for ( i = 0; i<UDP_MAX_CONNECTIONS; i++ ) {
-	if (udp_connection_state[i].conn_id == conn->id)
-	  udp_connection_state[i].active = 0;
+    if (udp_connection_state[i].conn_id == conn->id)
+      udp_connection_state[i].active = 0;
   }
 }
 
 void xtcp_handle_udp_event(chanend c_xtcp, xtcp_connection_t *conn)
 {
-  switch (conn->event)
-    {
+  switch (conn->event) {
     case XTCP_IFUP:
       /* This is already handled in the tcp event handler */
       return;
@@ -176,23 +172,23 @@ void xtcp_handle_udp_event(chanend c_xtcp, xtcp_connection_t *conn)
     switch (conn->event)
       {
       case XTCP_NEW_CONNECTION:
-    	udp_conn_init(c_xtcp, conn);
+        udp_conn_init(c_xtcp, conn);
         break;
       case XTCP_RECV_DATA:
         udp_recv(c_xtcp, conn);
         break;
       case XTCP_REQUEST_DATA:
       case XTCP_RESEND_DATA:
-    	udp_send(c_xtcp, conn);
+        udp_send(c_xtcp, conn);
         break;
       case XTCP_SENT_DATA:
-    	/* The connection is immediately closed after sending the socket data */
-    	udp_conn_close(c_xtcp, conn);
-    	break;
+        /* The connection is immediately closed after sending the socket data */
+        udp_conn_close(c_xtcp, conn);
+        break;
       case XTCP_TIMED_OUT:
       case XTCP_ABORTED:
       case XTCP_CLOSED:
-    	udp_conn_free(conn);
+        udp_conn_free(conn);
         break;
       default:
         // Ignore anything else

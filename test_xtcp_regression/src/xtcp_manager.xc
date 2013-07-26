@@ -22,16 +22,14 @@ void xtcp_manager(chanend c_xtcp)
   udpd_init(c_xtcp);
 
   // Loop forever processing TCP events
-  while(1)
-    {
-      select
-        {
-        case xtcp_event(c_xtcp, conn):
-		  xtcp_handle_xscope_tcp_event(c_xtcp, conn);
-		  xtcp_handle_tcp_event(c_xtcp, conn);
-          xtcp_handle_udp_event(c_xtcp, conn);
-          break;
-        }
-    }
+  while(1) {
+	select {
+      case xtcp_event(c_xtcp, conn):
+        xtcp_handle_xscope_tcp_event(c_xtcp, conn);
+        xtcp_handle_tcp_event(c_xtcp, conn);
+        xtcp_handle_udp_event(c_xtcp, conn);
+        break;
+	}
+  }
 }
 
