@@ -50,7 +50,7 @@ void tcpd_xscope_init(chanend c_xtcp)
 static void tcp_send(chanend c_xtcp, xtcp_connection_t *conn)
 {
   char data[XTCP_CLIENT_BUF_SIZE];
-  int len;
+  int len = 0;
   /* What to send? */
   fail("unimplemented");
   //xtcp_send(c_xtcp, data, len);
